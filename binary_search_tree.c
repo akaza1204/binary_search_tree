@@ -1,6 +1,8 @@
-﻿#include <stdio.h>
+﻿#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
+
+
 //binary search tree node
 
 struct Node {
@@ -53,7 +55,7 @@ struct Node* deleteNode(struct Node* node, int data) {
 		}
 		else { //양쪽 다 자식이 있을때 오른쪽 서브트리에서 가장 작은노드를 찾아서 삭제할 노드에 복사
 			struct Node* temp = node->right;
-			if (temp->left != NULL) {
+			while (temp->left != NULL) {
 				temp = temp->left;
 			}
 			node->data = temp->data;
@@ -77,62 +79,29 @@ struct Node* search(struct Node* root, int data) {
 	}
 }
 
-struct Queue {
-	struct Node* nodes[100];
-	int front;
-	int rear;
-};
-void init_queue(struct Queue* q) {
-	q->front = q->rear = 0;
-}
-
-
-void enqueue(struct Queue* q, struct Node* node) {
-	q->nodes[q->rear++] = node;
-}
-
-bool is_queue_empty(struct Queue* q) {
-	return (q->front) >= (q->rear);
-}
-
-struct Node* dequeue(struct Queue* q) {
-	return q->nodes[q->front++];
-}
-
-void printtree(struct Node* root) {
+void printBST(struct Node* root, int indent, int isLeft) {
 	if (root == NULL) return;
-	struct Queue q;
-	init_queue(&q);
-	enqueue(&q, root);
 
-	while (!is_queue_empty(&q)) {
-		int size = q.rear - q.front; // 현재 레벨 노드 개수
-		for (int i = 0; i < size; i++) {
-			struct Node* node = dequeue(&q);
-			printf("%d  ", node->data);
+	// 오른쪽 서브트리 먼저 출력 (위쪽)
+	printBST(root->right, indent + 4, 0);
 
-			if (node->left != NULL) { enqueue(&q, node->left); }
-			if (node->right != NULL) { enqueue(&q, node->right); }
-		}
-		printf("\n");
-	}
-	
+	// 현재 노드 출력
+	for (int i = 0; i < indent; i++) printf(" ");
+
+	if (indent == 0)           // 루트
+		printf("*%d\n", root->data);
+	else
+		printf("%s%d\n", isLeft ? "└─" : "┌─", root->data);
+
+	// 왼쪽 서브트리 출력 (아래쪽)
+	printBST(root->left, indent + 4, 1);
 }
 
 
-
-int main() {
-	struct Node* root = NULL;
-	root = insert(root, 50);
-	root = insert(root, 40);
-	root = insert(root, 30);
-	root = insert(root, 20);
-	root = insert(root, 10);
-	root = insert(root, 60);
-	root = insert(root, 1000);
-	deleteNode(root, 60);
-	printtree(root);
-	printf("\n");
-	return 0;
+void deleteTree(struct Node* root) {
+	if (root == NULL) return;
+	deleteTree(root->left);
+	deleteTree(root->right);
+	free(root);
 }
 
